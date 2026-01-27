@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trade Journal Pro 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#000;
+  color:#e5e5e5;
+}
+header{
+  background:#050505;
+  padding:15px;
+  text-align:center;
+  border-bottom:1px solid #222;
+}
+.tabs{
+  display:flex;
+  background:#0f0f0f;
+}
+.tabs button{
+  flex:1;
+  padding:10px;
+  background:#0f0f0f;
+  color:#aaa;
+  border:none;
+  cursor:pointer;
+}
+.tabs button.active{
+  background:#1a1a1a;
+  color:#0f0;
+  font-weight:bold;
+}
+.month{
+  display:none;
+  padding:20px;
+}
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  max-width:900px;
+  margin:auto;
+}
+.weekday{
+  font-weight:bold;
+  color:#777;
+  padding:6px;
+  background:#050505;
+  text-align:center;
+}
+.day{
+  background:#0b0b0b;
+  border:1px solid #222;
+  min-height:80px;
+  padding:8px;
+  white-space:pre-line;
+  cursor:pointer;
+}
+.day.profit{
+  background:linear-gradient(135deg,#003300,#001500);
+  border-color:#0f0;
+}
+.day.loss{
+  background:linear-gradient(135deg,#330000,#150000);
+  border-color:#900;
+}
+.day.empty{
+  background:transparent;
+  border:none;
+  cursor:default;
+}
+.graph-box{
+  max-width:900px;
+  margin:25px auto;
+  background:#0b0b0b;
+  padding:15px;
+  border:1px solid #222;
+}
+.popup,.overlay{display:none;position:fixed;}
+.overlay{
+  top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.8);z-index:5;
+}
+.popup{
+  top:10%;left:50%;
+  transform:translateX(-50%);
+  background:#0b0b0b;
+  border:1px solid #333;
+  padding:20px;
+  width:380px;
+  z-index:10;
+}
+table{width:100%;border-collapse:collapse;}
+td{border:1px solid #333;padding:5px;text-align:center;}
+input{
+  width:100%;
+  background:#000;
+  color:#0f0;
+  border:1px solid #333;
+}
+button{
+  margin:6px;
+  padding:6px 12px;
+  background:#111;
+  color:#0f0;
+  border:1px solid #333;
+  cursor:pointer;
+}
+button:hover{background:#1a1a1a;}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>📊 TRADE JOURNAL PRO — 2026</h1>
+</header>
+
+<div class="tabs" id="tabs"></div>
+<div id="months"></div>
+
+<div class="graph-box"><canvas id="dailyChart"></canvas></div>
+<div class="graph-box"><canvas id="monthlyChart"></canvas></div>
+
+<div class="graph-box">
+<h3>📊 Trading Stats</h3>
+<p>Win Rate: <span id="winRate">0%</span></p>
+<p>Current Streak: <span id="currentStreak">-</span></p>
+<p>Max Win Streak: <span id="maxWin">0</span></p>
+<p>Max Loss Streak: <span id="maxLoss">0</span></p>
+<button onclick="exportCSV()">📤 Export CSV</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="popup" id="popup">
+<h3 id="popupDate"></h3>
+<table id="entries">
+<tr><td>ENTRY</td><td>TP</td><td>SL</td><td>P/L</td><td></td></tr>
+</table>
+<button onclick="addRow()">ADD</button>
+<button onclick="saveData()">SAVE</button>
+<button onclick="closePopup()">CLOSE</button>
+</div>
+
+<script>
+const YEAR = 2026;
+const monthNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const daysInMonth=[31,28,31,30,31,30,31,31,30,31,30,31];
+const weekDays=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+const tabs=document.getElementById("tabs");
+const monthsDiv=document.getElementById("months");
+const popup=document.getElementById("popup");
+const overlay=document.getElementById("overlay");
+const popupDate=document.getElementById("popupDate");
+const entriesTable=document.getElementById("entries");
+
+let currentKey=null;
+let dailyChart,monthlyChart;
+
+/* -------- BUILD CALENDAR -------- */
+monthNames.forEach((m,i)=>{
+  let b=document.createElement("button");
+  b.textContent=m;
+  b.onclick=()=>showMonth(i);
+  tabs.appendChild(b);
+
+  let div=document.createElement("div");
+  div.className="month";
+  div.id="month"+i;
+
+  let cal=document.createElement("div");
+  cal.className="calendar";
+
+  weekDays.forEach(w=>{
+    let wd=document.createElement("div");
+    wd.className="weekday";
+    wd.textContent=w;
+    cal.appendChild(wd);
+  });
+
+  const firstDay=new Date(YEAR,i,1).getDay();
+  for(let e=0;e<firstDay;e++){
+    let empty=document.createElement("div");
+    empty.className="day empty";
+    cal.appendChild(empty);
+  }
+
+  for(let d=1;d<=daysInMonth[i];d++){
+    let key=`${m}${d}`;
+    let day=document.createElement("div");
+    day.className="day";
+    day.textContent=`${m} ${d}`;
+    day.onclick=()=>openPopup(key);
+
+    let saved=JSON.parse(localStorage.getItem(key));
+    if(saved){
+      let total=saved.reduce((s,e)=>s+(+e.profit||0),0);
+      day.textContent+=`\n${saved.length} trades\n${total>=0?"+":""}${total}`;
+      day.classList.add(total>=0?"profit":"loss");
+    }
+    cal.appendChild(day);
+  }
+
+  div.appendChild(cal);
+  monthsDiv.appendChild(div);
+});
+
+/* -------- POPUP -------- */
+function openPopup(key){
+  currentKey=key;
+  popupDate.textContent=key;
+  entriesTable.innerHTML='<tr><td>ENTRY</td><td>TP</td><td>SL</td><td>P/L</td><td></td></tr>';
+  let s=JSON.parse(localStorage.getItem(key))||[];
+  s.forEach(e=>addRow(e.entry,e.tp,e.sl,e.profit));
+  popup.style.display=overlay.style.display="block";
+}
+function closePopup(){ popup.style.display=overlay.style.display="none"; }
+function addRow(e="",tp="",sl="",p=""){
+  let r=document.createElement("tr");
+  r.innerHTML=`
+  <td><input value="${e}"></td>
+  <td><input value="${tp}"></td>
+  <td><input value="${sl}"></td>
+  <td><input type="number" value="${p}"></td>
+  <td><button onclick="this.closest('tr').remove()">✖</button></td>`;
+  entriesTable.appendChild(r);
+}
+function saveData(){
+  let rows=[...entriesTable.querySelectorAll("tr")].slice(1);
+  let data=rows.map(r=>{
+    let i=r.querySelectorAll("input");
+    return{entry:i[0].value,tp:i[1].value,sl:i[2].value,profit:i[3].value};
+  }).filter(x=>x.entry||x.profit);
+  if(data.length) localStorage.setItem(currentKey,JSON.stringify(data));
+  else localStorage.removeItem(currentKey);
+  location.reload();
+}
+
+/* -------- CHARTS -------- */
+function buildCharts(month){
+  let daily=[],labels=[],colors=[];
+  for(let d=1;d<=daysInMonth[month];d++){
+    let s=JSON.parse(localStorage.getItem(`${monthNames[month]}${d}`))||[];
+    let t=s.reduce((a,b)=>a+(+b.profit||0),0);
+    daily.push(t); labels.push(d);
+    colors.push(t>=0?"#00ff55":"#ff3333");
+  }
+
+  if(dailyChart)dailyChart.destroy();
+  dailyChart=new Chart(dailyChartCtx,{
+    type:"bar",
+    data:{labels,datasets:[{data:daily,backgroundColor:colors}]},
+    options:{plugins:{legend:{display:false}}}
+  });
+
+  let monthly=[];
+  monthNames.forEach((m,i)=>{
+    let t=0;
+    for(let d=1;d<=daysInMonth[i];d++){
+      let s=JSON.parse(localStorage.getItem(`${m}${d}`))||[];
+      t+=s.reduce((a,b)=>a+(+b.profit||0),0);
+    }
+    monthly.push(t);
+  });
+
+  const yearPL=monthly.reduce((a,b)=>a+b,0);
+  const lineColor=yearPL>=0?"#00ff55":"#ff3333";
+
+  if(monthlyChart)monthlyChart.destroy();
+  monthlyChart=new Chart(monthlyChartCtx,{
+    type:"line",
+    data:{labels:monthNames,datasets:[{
+      data:monthly,
+      borderColor:lineColor,
+      tension:.3,
+      pointBackgroundColor:monthly.map(v=>v>=0?"#00ff55":"#ff3333")
+    }]},
+    options:{plugins:{legend:{display:false}}}
+  });
+}
+
+/* -------- STATS -------- */
+function calculateStats(){
+  let trades=[];
+  monthNames.forEach((m,i)=>{
+    for(let d=1;d<=daysInMonth[i];d++){
+      let s=JSON.parse(localStorage.getItem(`${m}${d}`))||[];
+      s.forEach(t=>trades.push(+t.profit||0));
+    }
+  });
+  if(!trades.length)return;
+
+  let wins=trades.filter(p=>p>0).length;
+  document.getElementById("winRate").textContent=((wins/trades.length)*100).toFixed(1)+"%";
+
+  let maxW=0,maxL=0,curW=0,curL=0;
+  trades.forEach(p=>{
+    if(p>0){curW++;curL=0;}
+    else if(p<0){curL++;curW=0;}
+    maxW=Math.max(maxW,curW);
+    maxL=Math.max(maxL,curL);
+  });
+
+  document.getElementById("currentStreak").textContent=
+    curW?`🔥 W${curW}`:curL?`❌ L${curL}`:"-";
+  document.getElementById("maxWin").textContent=maxW;
+  document.getElementById("maxLoss").textContent=maxL;
+}
+
+/* -------- CSV -------- */
+function exportCSV(){
+  let csv="Date,Entry,TP,SL,Profit\n";
+  monthNames.forEach((m,i)=>{
+    for(let d=1;d<=daysInMonth[i];d++){
+      let s=JSON.parse(localStorage.getItem(`${m}${d}`))||[];
+      s.forEach(t=>{
+        csv+=`${m} ${d},${t.entry},${t.tp},${t.sl},${t.profit}\n`;
+      });
+    }
+  });
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="trade_journal_2026.csv";
+  a.click();
+}
+
+/* -------- INIT -------- */
+const dailyChartCtx=document.getElementById("dailyChart");
+const monthlyChartCtx=document.getElementById("monthlyChart");
+
+function showMonth(i){
+  document.querySelectorAll(".month").forEach(m=>m.style.display="none");
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById("month"+i).style.display="block";
+  tabs.children[i].classList.add("active");
+  buildCharts(i);
+}
+
+showMonth(0);
+calculateStats();
+</script>
+
+</body>
+</html>
