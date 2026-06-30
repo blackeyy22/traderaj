@@ -1,0 +1,1866 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trade Journal Pro</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080a0f;
+      --surface: #10141d;
+      --surface-2: #151b26;
+      --surface-3: #1a2230;
+      --line: #293241;
+      --line-strong: #3b4758;
+      --text: #f5f7fb;
+      --muted: #9aa6b8;
+      --muted-2: #6f7a8c;
+      --green: #22c55e;
+      --green-soft: rgba(34, 197, 94, .13);
+      --red: #f43f5e;
+      --red-soft: rgba(244, 63, 94, .13);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, .14);
+      --blue: #38bdf8;
+      --blue-soft: rgba(56, 189, 248, .13);
+      --violet: #a78bfa;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .35);
+      --radius: 8px;
+      --font: Inter, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .app-shell {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 20px 0 44px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 0 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand-kicker {
+      margin: 0 0 4px;
+      color: var(--blue);
+      font-size: .78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 0;
+      font-size: 1.75rem;
+      line-height: 1.15;
+    }
+
+    h2 {
+      margin-bottom: 0;
+      font-size: 1.1rem;
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: .96rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .top-actions,
+    .panel-actions,
+    .dialog-actions,
+    .month-nav,
+    .filters,
+    .inline-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .control {
+      display: grid;
+      gap: 5px;
+      min-width: 112px;
+    }
+
+    .control label {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #0d1118;
+      color: var(--text);
+      outline: none;
+      padding: 8px 10px;
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-soft);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 38px;
+      max-width: 100%;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px 12px;
+      font-weight: 750;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      border-color: var(--line-strong);
+      background: var(--surface-3);
+    }
+
+    .btn.primary {
+      border-color: #1c8f4a;
+      background: #16a34a;
+      color: #041208;
+    }
+
+    .btn.primary:hover {
+      background: #22c55e;
+    }
+
+    .btn.danger {
+      border-color: #7f1d1d;
+      color: #fecdd3;
+      background: #3f101a;
+    }
+
+    .btn.icon {
+      width: 38px;
+      padding: 0;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .metric {
+      min-height: 104px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: .77rem;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 9px;
+      font-size: 1.35rem;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted-2);
+    }
+
+    .positive {
+      color: var(--green);
+    }
+
+    .negative {
+      color: var(--red);
+    }
+
+    .neutral {
+      color: var(--muted);
+    }
+
+    .month-strip {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(66px, 1fr));
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .month-tab {
+      min-height: 46px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .month-tab.active {
+      border-color: rgba(56, 189, 248, .7);
+      background: var(--blue-soft);
+      color: var(--text);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(320px, .72fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .calendar-head {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    .weekday {
+      min-height: 28px;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .day-cell {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #0d1118;
+      color: var(--text);
+      padding: 9px;
+      text-align: left;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .day-cell:hover {
+      border-color: var(--line-strong);
+      background: #111722;
+    }
+
+    .day-cell.empty {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .day-cell.selected {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px var(--blue-soft) inset;
+    }
+
+    .day-cell.today {
+      border-color: var(--amber);
+    }
+
+    .day-cell.win {
+      background: var(--green-soft);
+      border-color: rgba(34, 197, 94, .45);
+    }
+
+    .day-cell.loss {
+      background: var(--red-soft);
+      border-color: rgba(244, 63, 94, .45);
+    }
+
+    .day-cell.flat {
+      background: var(--amber-soft);
+      border-color: rgba(245, 158, 11, .4);
+    }
+
+    .day-number {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 850;
+    }
+
+    .trade-count {
+      color: var(--muted);
+      font-size: .74rem;
+      font-weight: 750;
+    }
+
+    .day-total {
+      display: block;
+      align-self: center;
+      margin: 8px 0;
+      font-size: 1.06rem;
+      font-weight: 850;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .day-note {
+      min-height: 18px;
+      color: var(--muted);
+      font-size: .78rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .day-detail {
+      display: grid;
+      gap: 14px;
+    }
+
+    .day-detail-top {
+      display: grid;
+      gap: 4px;
+    }
+
+    .day-detail-top strong {
+      font-size: 1.15rem;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .mini-stat {
+      min-height: 70px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #0d1118;
+    }
+
+    .mini-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .mini-stat strong {
+      display: block;
+      margin-top: 6px;
+      font-size: .98rem;
+      overflow-wrap: anywhere;
+    }
+
+    .trade-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .trade-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 62px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #0d1118;
+    }
+
+    .trade-title {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-weight: 850;
+    }
+
+    .trade-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .83rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: var(--surface-3);
+      color: var(--muted);
+      font-size: .75rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .pill.long {
+      color: #bbf7d0;
+      background: rgba(34, 197, 94, .18);
+    }
+
+    .pill.short {
+      color: #fecdd3;
+      background: rgba(244, 63, 94, .18);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .chart-wrap {
+      height: 320px;
+      padding: 12px;
+    }
+
+    .trade-log {
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 840px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      background: #0d1118;
+    }
+
+    td {
+      color: var(--text);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, .02);
+    }
+
+    .empty-state {
+      min-height: 92px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 18px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 7px;
+      background: #0d1118;
+    }
+
+    .dialog-layer {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(4, 6, 10, .78);
+      z-index: 20;
+    }
+
+    .dialog-layer.open {
+      display: grid;
+    }
+
+    .dialog {
+      width: min(880px, 100%);
+      max-height: min(820px, calc(100vh - 36px));
+      overflow: auto;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #0d1118;
+      box-shadow: var(--shadow);
+    }
+
+    .dialog-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .dialog-body {
+      padding: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .form-grid .wide {
+      grid-column: span 2;
+    }
+
+    .form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    .dialog-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+      position: sticky;
+      bottom: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1180px) {
+      .metrics-grid {
+        grid-template-columns: repeat(3, minmax(160px, 1fr));
+      }
+
+      .main-grid,
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app-shell {
+        width: min(100% - 20px, 1480px);
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions {
+        align-items: stretch;
+      }
+
+      .top-actions .control,
+      .top-actions .btn {
+        flex: 1 1 130px;
+      }
+
+      .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .month-strip {
+        grid-template-columns: repeat(6, minmax(58px, 1fr));
+      }
+
+      .panel-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .calendar-grid,
+      .calendar-head {
+        gap: 5px;
+      }
+
+      .day-cell {
+        min-height: 92px;
+        padding: 7px;
+      }
+
+      .day-total {
+        font-size: .9rem;
+      }
+
+      .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        font-size: 14px;
+      }
+
+      h1 {
+        font-size: 1.35rem;
+      }
+
+      .metrics-grid,
+      .mini-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .month-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .weekday {
+        font-size: .68rem;
+      }
+
+      .day-cell {
+        min-height: 78px;
+      }
+
+      .trade-count,
+      .day-note {
+        display: none;
+      }
+
+      .chart-wrap {
+        height: 260px;
+      }
+
+      .form-grid,
+      .form-grid .wide {
+        grid-template-columns: 1fr;
+        grid-column: 1 / -1;
+      }
+
+      .dialog-footer {
+        flex-direction: column;
+      }
+
+      .dialog-actions {
+        width: 100%;
+      }
+
+      .dialog-actions .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="brand-kicker">Trading desk</p>
+        <h1>Trade Journal Pro</h1>
+      </div>
+      <div class="top-actions">
+        <div class="control">
+          <label for="yearInput">Year</label>
+          <input id="yearInput" type="number" min="2000" max="2099" step="1">
+        </div>
+        <div class="control">
+          <label for="currencySelect">Currency</label>
+          <select id="currencySelect">
+            <option value="USD">USD</option>
+            <option value="INR">INR</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+          </select>
+        </div>
+        <button class="btn primary" id="addTradeBtn" type="button">+ Trade</button>
+      </div>
+    </header>
+
+    <section class="metrics-grid" id="metricsGrid" aria-label="Trading metrics"></section>
+
+    <nav class="month-strip" id="monthStrip" aria-label="Months"></nav>
+
+    <section class="main-grid">
+      <section class="panel" aria-label="Calendar">
+        <div class="panel-header">
+          <div>
+            <h2 id="monthTitle">Month</h2>
+            <p class="muted" id="monthSubtitle"></p>
+          </div>
+          <div class="month-nav">
+            <button class="btn icon" id="prevMonthBtn" type="button" aria-label="Previous month">&lt;</button>
+            <button class="btn icon" id="nextMonthBtn" type="button" aria-label="Next month">&gt;</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="calendar-head" id="calendarHead"></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </section>
+
+      <aside class="side-stack">
+        <section class="panel" aria-label="Selected day">
+          <div class="panel-header">
+            <div>
+              <h2 id="selectedDayTitle">Selected Day</h2>
+              <p class="muted" id="selectedDaySubtitle"></p>
+            </div>
+            <button class="btn primary" id="addDayTradeBtn" type="button">+ Trade</button>
+          </div>
+          <div class="panel-body day-detail" id="selectedDayPanel"></div>
+        </section>
+
+        <section class="panel" aria-label="Data controls">
+          <div class="panel-header">
+            <div>
+              <h2>Data</h2>
+              <p class="muted" id="storageStatus"></p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="panel-actions">
+              <button class="btn" id="exportCsvBtn" type="button">Export CSV</button>
+              <button class="btn" id="exportJsonBtn" type="button">Backup JSON</button>
+              <button class="btn" id="importJsonBtn" type="button">Import JSON</button>
+              <button class="btn danger" id="clearDataBtn" type="button">Clear</button>
+              <input class="hidden" id="jsonFileInput" type="file" accept="application/json,.json">
+            </div>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="charts-grid" aria-label="Charts">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Monthly P/L</h2>
+            <p class="muted">Net performance by month</p>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="monthlyChart"></canvas>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Equity Curve</h2>
+            <p class="muted">Cumulative net P/L by trade</p>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="equityChart"></canvas>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel trade-log" aria-label="Trade log">
+      <div class="panel-header">
+        <div>
+          <h2>Trade Log</h2>
+          <p class="muted" id="logSubtitle"></p>
+        </div>
+        <div class="filters">
+          <input id="searchInput" type="search" placeholder="Search symbol or setup">
+          <select id="sideFilter" aria-label="Side filter">
+            <option value="all">All sides</option>
+            <option value="Long">Long</option>
+            <option value="Short">Short</option>
+          </select>
+          <select id="resultFilter" aria-label="Result filter">
+            <option value="all">All results</option>
+            <option value="win">Wins</option>
+            <option value="loss">Losses</option>
+            <option value="flat">Flat</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Setup</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>Risk</th>
+              <th>Net P/L</th>
+              <th>R</th>
+              <th>Grade</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tradeLogBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="dialog-layer" id="tradeDialogLayer" role="presentation">
+    <form class="dialog" id="tradeForm">
+      <div class="dialog-header">
+        <div>
+          <h2 id="dialogTitle">New Trade</h2>
+          <p class="muted" id="dialogSubtitle"></p>
+        </div>
+        <button class="btn icon" id="closeDialogBtn" type="button" aria-label="Close">x</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-grid">
+          <div class="control">
+            <label for="tradeDate">Date</label>
+            <input id="tradeDate" name="date" type="date" required>
+          </div>
+          <div class="control">
+            <label for="tradeSymbol">Symbol</label>
+            <input id="tradeSymbol" name="symbol" type="text" placeholder="NIFTY, BTC, AAPL">
+          </div>
+          <div class="control">
+            <label for="tradeSide">Side</label>
+            <select id="tradeSide" name="side">
+              <option>Long</option>
+              <option>Short</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="tradeSession">Session</label>
+            <select id="tradeSession" name="session">
+              <option>Intraday</option>
+              <option>Swing</option>
+              <option>Scalp</option>
+              <option>Position</option>
+            </select>
+          </div>
+          <div class="control wide">
+            <label for="tradeSetup">Setup</label>
+            <input id="tradeSetup" name="setup" type="text" placeholder="Breakout, pullback, reversal">
+          </div>
+          <div class="control">
+            <label for="tradeEntry">Entry</label>
+            <input id="tradeEntry" name="entry" type="number" step="any">
+          </div>
+          <div class="control">
+            <label for="tradeExit">Exit</label>
+            <input id="tradeExit" name="exit" type="number" step="any">
+          </div>
+          <div class="control">
+            <label for="tradeStop">Stop</label>
+            <input id="tradeStop" name="stop" type="number" step="any">
+          </div>
+          <div class="control">
+            <label for="tradeTarget">Target</label>
+            <input id="tradeTarget" name="target" type="number" step="any">
+          </div>
+          <div class="control">
+            <label for="tradeQty">Quantity</label>
+            <input id="tradeQty" name="quantity" type="number" step="any">
+          </div>
+          <div class="control">
+            <label for="tradeRisk">Risk</label>
+            <input id="tradeRisk" name="risk" type="number" step="any">
+          </div>
+          <div class="control">
+            <label for="tradeProfit">Gross P/L</label>
+            <input id="tradeProfit" name="profit" type="number" step="any" required>
+          </div>
+          <div class="control">
+            <label for="tradeFees">Fees</label>
+            <input id="tradeFees" name="fees" type="number" step="any">
+          </div>
+          <div class="control">
+            <label for="tradeGrade">Grade</label>
+            <select id="tradeGrade" name="grade">
+              <option>A+</option>
+              <option>A</option>
+              <option>B</option>
+              <option>C</option>
+              <option>D</option>
+              <option>F</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="tradeMood">Mood</label>
+            <select id="tradeMood" name="mood">
+              <option>Focused</option>
+              <option>Calm</option>
+              <option>Impatient</option>
+              <option>Fearful</option>
+              <option>Overconfident</option>
+            </select>
+          </div>
+          <div class="control full">
+            <label for="tradeNotes">Notes</label>
+            <textarea id="tradeNotes" name="notes" placeholder="Reason, mistake, lesson, screenshot link"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn danger hidden" id="deleteTradeBtn" type="button">Delete</button>
+        <div class="dialog-actions">
+          <button class="btn" id="cancelTradeBtn" type="button">Cancel</button>
+          <button class="btn primary" type="submit">Save Trade</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "tradeJournalPro.v2";
+    const LEGACY_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const DEFAULT_YEAR = 2026;
+
+    const els = {
+      yearInput: document.getElementById("yearInput"),
+      currencySelect: document.getElementById("currencySelect"),
+      addTradeBtn: document.getElementById("addTradeBtn"),
+      metricsGrid: document.getElementById("metricsGrid"),
+      monthStrip: document.getElementById("monthStrip"),
+      monthTitle: document.getElementById("monthTitle"),
+      monthSubtitle: document.getElementById("monthSubtitle"),
+      prevMonthBtn: document.getElementById("prevMonthBtn"),
+      nextMonthBtn: document.getElementById("nextMonthBtn"),
+      calendarHead: document.getElementById("calendarHead"),
+      calendarGrid: document.getElementById("calendarGrid"),
+      selectedDayTitle: document.getElementById("selectedDayTitle"),
+      selectedDaySubtitle: document.getElementById("selectedDaySubtitle"),
+      selectedDayPanel: document.getElementById("selectedDayPanel"),
+      addDayTradeBtn: document.getElementById("addDayTradeBtn"),
+      storageStatus: document.getElementById("storageStatus"),
+      exportCsvBtn: document.getElementById("exportCsvBtn"),
+      exportJsonBtn: document.getElementById("exportJsonBtn"),
+      importJsonBtn: document.getElementById("importJsonBtn"),
+      clearDataBtn: document.getElementById("clearDataBtn"),
+      jsonFileInput: document.getElementById("jsonFileInput"),
+      monthlyChart: document.getElementById("monthlyChart"),
+      equityChart: document.getElementById("equityChart"),
+      logSubtitle: document.getElementById("logSubtitle"),
+      searchInput: document.getElementById("searchInput"),
+      sideFilter: document.getElementById("sideFilter"),
+      resultFilter: document.getElementById("resultFilter"),
+      tradeLogBody: document.getElementById("tradeLogBody"),
+      tradeDialogLayer: document.getElementById("tradeDialogLayer"),
+      tradeForm: document.getElementById("tradeForm"),
+      dialogTitle: document.getElementById("dialogTitle"),
+      dialogSubtitle: document.getElementById("dialogSubtitle"),
+      closeDialogBtn: document.getElementById("closeDialogBtn"),
+      deleteTradeBtn: document.getElementById("deleteTradeBtn"),
+      cancelTradeBtn: document.getElementById("cancelTradeBtn")
+    };
+
+    const fields = {
+      date: document.getElementById("tradeDate"),
+      symbol: document.getElementById("tradeSymbol"),
+      side: document.getElementById("tradeSide"),
+      session: document.getElementById("tradeSession"),
+      setup: document.getElementById("tradeSetup"),
+      entry: document.getElementById("tradeEntry"),
+      exit: document.getElementById("tradeExit"),
+      stop: document.getElementById("tradeStop"),
+      target: document.getElementById("tradeTarget"),
+      quantity: document.getElementById("tradeQty"),
+      risk: document.getElementById("tradeRisk"),
+      profit: document.getElementById("tradeProfit"),
+      fees: document.getElementById("tradeFees"),
+      grade: document.getElementById("tradeGrade"),
+      mood: document.getElementById("tradeMood"),
+      notes: document.getElementById("tradeNotes")
+    };
+
+    let state = loadState();
+    let activeMonth = 0;
+    let selectedDate = isoDate(state.settings.year, 0, 1);
+    let editingId = null;
+    let monthlyChart;
+    let equityChart;
+
+    function newId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return "trade-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+    }
+
+    function loadState() {
+      const saved = safeParse(localStorage.getItem(STORAGE_KEY));
+      if (saved && Array.isArray(saved.trades)) {
+        return normalizeState(saved);
+      }
+
+      const migrated = migrateLegacyData();
+      if (migrated.trades.length) {
+        saveState(migrated);
+        return migrated;
+      }
+
+      return {
+        settings: { year: DEFAULT_YEAR, currency: "USD" },
+        trades: []
+      };
+    }
+
+    function normalizeState(value) {
+      const settings = Object.assign({ year: DEFAULT_YEAR, currency: "USD" }, value.settings || {});
+      settings.year = Number(settings.year) || DEFAULT_YEAR;
+      const trades = value.trades.map(normalizeTrade).filter(Boolean);
+      return { settings, trades };
+    }
+
+    function normalizeTrade(trade) {
+      if (!trade || !trade.date) {
+        return null;
+      }
+      return {
+        id: trade.id || newId(),
+        date: String(trade.date),
+        symbol: String(trade.symbol || "").trim().toUpperCase(),
+        side: trade.side === "Short" ? "Short" : "Long",
+        session: trade.session || "Intraday",
+        setup: trade.setup || "",
+        entry: numberOrBlank(trade.entry),
+        exit: numberOrBlank(trade.exit),
+        stop: numberOrBlank(trade.stop),
+        target: numberOrBlank(trade.target),
+        quantity: numberOrBlank(trade.quantity),
+        risk: numberOrBlank(trade.risk),
+        profit: Number(trade.profit) || 0,
+        fees: Number(trade.fees) || 0,
+        grade: trade.grade || "B",
+        mood: trade.mood || "Focused",
+        notes: trade.notes || "",
+        createdAt: trade.createdAt || new Date().toISOString()
+      };
+    }
+
+    function migrateLegacyData() {
+      const migrated = {
+        settings: { year: DEFAULT_YEAR, currency: "USD" },
+        trades: []
+      };
+
+      LEGACY_MONTHS.forEach((month, monthIndex) => {
+        const days = daysInMonth(DEFAULT_YEAR, monthIndex);
+        for (let day = 1; day <= days; day += 1) {
+          const legacyKey = month + day;
+          const rows = safeParse(localStorage.getItem(legacyKey));
+          if (!Array.isArray(rows)) {
+            continue;
+          }
+          rows.forEach((row) => {
+            migrated.trades.push(normalizeTrade({
+              id: newId(),
+              date: isoDate(DEFAULT_YEAR, monthIndex, day),
+              symbol: "",
+              side: "Long",
+              session: "Intraday",
+              setup: "",
+              entry: row.entry,
+              target: row.tp,
+              stop: row.sl,
+              profit: row.profit,
+              fees: 0,
+              grade: "B",
+              mood: "Focused",
+              notes: ""
+            }));
+          });
+        }
+      });
+      migrated.trades = migrated.trades.filter(Boolean);
+      return migrated;
+    }
+
+    function saveState(nextState = state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+    }
+
+    function safeParse(value) {
+      try {
+        return value ? JSON.parse(value) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function numberOrBlank(value) {
+      if (value === "" || value === null || value === undefined) {
+        return "";
+      }
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : "";
+    }
+
+    function numberValue(value) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function netProfit(trade) {
+      return numberValue(trade.profit) - numberValue(trade.fees);
+    }
+
+    function rMultiple(trade) {
+      const risk = Math.abs(numberValue(trade.risk));
+      if (!risk) {
+        return null;
+      }
+      return netProfit(trade) / risk;
+    }
+
+    function isoDate(year, monthIndex, day) {
+      return year + "-" + String(monthIndex + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+    }
+
+    function parseIsoDate(date) {
+      const parts = String(date).split("-").map(Number);
+      return { year: parts[0], month: parts[1] - 1, day: parts[2] };
+    }
+
+    function daysInMonth(year, monthIndex) {
+      return new Date(year, monthIndex + 1, 0).getDate();
+    }
+
+    function formatDate(date) {
+      const parsed = parseIsoDate(date);
+      return MONTH_NAMES[parsed.month] + " " + parsed.day + ", " + parsed.year;
+    }
+
+    function formatMoney(value, compact = false) {
+      const amount = Number(value) || 0;
+      const options = {
+        style: "currency",
+        currency: state.settings.currency,
+        maximumFractionDigits: compact ? 0 : 2
+      };
+      return new Intl.NumberFormat("en-US", options).format(amount);
+    }
+
+    function formatNumber(value, digits = 1) {
+      if (value === null || value === undefined || Number.isNaN(value)) {
+        return "-";
+      }
+      return Number(value).toFixed(digits);
+    }
+
+    function resultClass(value) {
+      if (value > 0) {
+        return "positive";
+      }
+      if (value < 0) {
+        return "negative";
+      }
+      return "neutral";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function tradesInYear() {
+      return state.trades.filter((trade) => parseIsoDate(trade.date).year === state.settings.year);
+    }
+
+    function tradesForDate(date) {
+      return state.trades
+        .filter((trade) => trade.date === date)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    }
+
+    function tradesForMonth(monthIndex) {
+      return tradesInYear().filter((trade) => parseIsoDate(trade.date).month === monthIndex);
+    }
+
+    function filteredTrades() {
+      const query = els.searchInput.value.trim().toLowerCase();
+      const side = els.sideFilter.value;
+      const result = els.resultFilter.value;
+
+      return tradesInYear()
+        .filter((trade) => {
+          const net = netProfit(trade);
+          const matchesQuery = !query || [trade.symbol, trade.setup, trade.notes].some((value) => String(value).toLowerCase().includes(query));
+          const matchesSide = side === "all" || trade.side === side;
+          const matchesResult =
+            result === "all" ||
+            (result === "win" && net > 0) ||
+            (result === "loss" && net < 0) ||
+            (result === "flat" && net === 0);
+          return matchesQuery && matchesSide && matchesResult;
+        })
+        .sort(sortTradesDesc);
+    }
+
+    function sortTradesAsc(a, b) {
+      return (a.date + a.createdAt).localeCompare(b.date + b.createdAt);
+    }
+
+    function sortTradesDesc(a, b) {
+      return (b.date + b.createdAt).localeCompare(a.date + a.createdAt);
+    }
+
+    function calculateMetrics(trades) {
+      const total = trades.reduce((sum, trade) => sum + netProfit(trade), 0);
+      const wins = trades.filter((trade) => netProfit(trade) > 0);
+      const losses = trades.filter((trade) => netProfit(trade) < 0);
+      const grossWin = wins.reduce((sum, trade) => sum + netProfit(trade), 0);
+      const grossLoss = Math.abs(losses.reduce((sum, trade) => sum + netProfit(trade), 0));
+      const profitFactor = grossLoss ? grossWin / grossLoss : grossWin ? Infinity : 0;
+      const rValues = trades.map(rMultiple).filter((value) => value !== null);
+      const avgR = rValues.length ? rValues.reduce((sum, value) => sum + value, 0) / rValues.length : null;
+      const sorted = trades.slice().sort(sortTradesAsc).filter((trade) => netProfit(trade) !== 0);
+      let currentStreak = 0;
+      let currentType = "flat";
+      for (let index = sorted.length - 1; index >= 0; index -= 1) {
+        const result = netProfit(sorted[index]) > 0 ? "win" : "loss";
+        if (currentType === "flat") {
+          currentType = result;
+        }
+        if (result !== currentType) {
+          break;
+        }
+        currentStreak += 1;
+      }
+
+      return {
+        total,
+        count: trades.length,
+        winRate: trades.length ? (wins.length / trades.length) * 100 : 0,
+        profitFactor,
+        avgR,
+        currentStreak,
+        currentType,
+        avgWin: wins.length ? grossWin / wins.length : 0,
+        avgLoss: losses.length ? grossLoss / losses.length : 0
+      };
+    }
+
+    function dayGroups() {
+      const groups = new Map();
+      tradesInYear().forEach((trade) => {
+        if (!groups.has(trade.date)) {
+          groups.set(trade.date, []);
+        }
+        groups.get(trade.date).push(trade);
+      });
+      return groups;
+    }
+
+    function render() {
+      state.settings.year = Number(state.settings.year) || DEFAULT_YEAR;
+      activeMonth = Math.max(0, Math.min(11, activeMonth));
+      selectedDate = keepSelectedDateInYear(selectedDate);
+
+      els.yearInput.value = state.settings.year;
+      els.currencySelect.value = state.settings.currency;
+      renderMetrics();
+      renderMonths();
+      renderCalendar();
+      renderSelectedDay();
+      renderCharts();
+      renderTradeLog();
+      els.storageStatus.textContent = state.trades.length + " saved trades";
+    }
+
+    function keepSelectedDateInYear(date) {
+      const parsed = parseIsoDate(date || "");
+      if (parsed.year === state.settings.year && parsed.month >= 0 && parsed.month <= 11) {
+        return date;
+      }
+      return isoDate(state.settings.year, activeMonth, 1);
+    }
+
+    function renderMetrics() {
+      const metrics = calculateMetrics(tradesInYear());
+      const profitFactor = metrics.profitFactor === Infinity ? "Perfect" : formatNumber(metrics.profitFactor, 2);
+      const streakLabel = metrics.currentStreak ? (metrics.currentType === "win" ? "W" : "L") + metrics.currentStreak : "-";
+      const cards = [
+        ["Net P/L", formatMoney(metrics.total), metrics.total >= 0 ? "Account is green" : "Account is red", resultClass(metrics.total)],
+        ["Trades", String(metrics.count), "Logged this year", "neutral"],
+        ["Win Rate", formatNumber(metrics.winRate, 1) + "%", "Wins over total trades", metrics.winRate >= 50 ? "positive" : "neutral"],
+        ["Profit Factor", profitFactor, "Gross win / gross loss", metrics.profitFactor >= 1 ? "positive" : "negative"],
+        ["Average R", metrics.avgR === null ? "-" : formatNumber(metrics.avgR, 2) + "R", "Risk adjusted result", metrics.avgR >= 0 ? "positive" : "negative"],
+        ["Current Streak", streakLabel, "Latest non-flat run", metrics.currentType === "win" ? "positive" : metrics.currentType === "loss" ? "negative" : "neutral"]
+      ];
+
+      els.metricsGrid.innerHTML = cards.map(([label, value, note, cls]) => `
+        <article class="metric">
+          <span>${escapeHtml(label)}</span>
+          <strong class="${cls}">${escapeHtml(value)}</strong>
+          <small>${escapeHtml(note)}</small>
+        </article>
+      `).join("");
+    }
+
+    function renderMonths() {
+      const monthly = monthlyTotals();
+      els.monthStrip.innerHTML = MONTH_NAMES.map((name, index) => {
+        const shortName = name.slice(0, 3);
+        const total = monthly[index] || 0;
+        return `
+          <button class="month-tab ${index === activeMonth ? "active" : ""}" type="button" data-month="${index}">
+            ${shortName}<br><span class="${resultClass(total)}">${formatMoney(total, true)}</span>
+          </button>
+        `;
+      }).join("");
+
+      els.monthStrip.querySelectorAll(".month-tab").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeMonth = Number(button.dataset.month);
+          selectedDate = isoDate(state.settings.year, activeMonth, 1);
+          render();
+        });
+      });
+    }
+
+    function renderCalendar() {
+      const monthName = MONTH_NAMES[activeMonth];
+      const monthTrades = tradesForMonth(activeMonth);
+      const monthMetrics = calculateMetrics(monthTrades);
+      els.monthTitle.textContent = monthName + " " + state.settings.year;
+      els.monthSubtitle.textContent = monthTrades.length + " trades, " + formatMoney(monthMetrics.total) + " net";
+      els.calendarHead.innerHTML = WEEKDAYS.map((day) => `<div class="weekday">${day}</div>`).join("");
+
+      const firstDay = new Date(state.settings.year, activeMonth, 1).getDay();
+      const totalDays = daysInMonth(state.settings.year, activeMonth);
+      const today = new Date();
+      const todayIso = isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+      const cells = [];
+
+      for (let index = 0; index < firstDay; index += 1) {
+        cells.push('<button class="day-cell empty" type="button" tabindex="-1"></button>');
+      }
+
+      for (let day = 1; day <= totalDays; day += 1) {
+        const date = isoDate(state.settings.year, activeMonth, day);
+        const dayTrades = tradesForDate(date);
+        const total = dayTrades.reduce((sum, trade) => sum + netProfit(trade), 0);
+        const topTrade = dayTrades[0];
+        const status = dayTrades.length ? (total > 0 ? "win" : total < 0 ? "loss" : "flat") : "";
+        const selected = date === selectedDate ? "selected" : "";
+        const isToday = date === todayIso ? "today" : "";
+        const note = topTrade ? [topTrade.symbol || "Trade", topTrade.setup].filter(Boolean).join(" / ") : "";
+        cells.push(`
+          <button class="day-cell ${status} ${selected} ${isToday}" type="button" data-date="${date}">
+            <span class="day-number">${day}<span class="trade-count">${dayTrades.length ? dayTrades.length + " trades" : ""}</span></span>
+            <span class="day-total ${resultClass(total)}">${dayTrades.length ? formatMoney(total, true) : ""}</span>
+            <span class="day-note">${escapeHtml(note)}</span>
+          </button>
+        `);
+      }
+
+      els.calendarGrid.innerHTML = cells.join("");
+      els.calendarGrid.querySelectorAll(".day-cell[data-date]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedDate = button.dataset.date;
+          renderCalendar();
+          renderSelectedDay();
+        });
+      });
+    }
+
+    function renderSelectedDay() {
+      const dayTrades = tradesForDate(selectedDate);
+      const metrics = calculateMetrics(dayTrades);
+      els.selectedDayTitle.textContent = formatDate(selectedDate);
+      els.selectedDaySubtitle.textContent = dayTrades.length ? dayTrades.length + " trades logged" : "No trades logged";
+
+      const tradeItems = dayTrades.length
+        ? dayTrades.map((trade) => {
+            const net = netProfit(trade);
+            const r = rMultiple(trade);
+            return `
+              <article class="trade-item">
+                <div>
+                  <div class="trade-title">
+                    <span>${escapeHtml(trade.symbol || "Trade")}</span>
+                    <span class="pill ${trade.side.toLowerCase()}">${escapeHtml(trade.side)}</span>
+                    <span class="pill">${escapeHtml(trade.grade)}</span>
+                  </div>
+                  <div class="trade-meta">${escapeHtml(trade.setup || trade.session)}${r === null ? "" : " | " + formatNumber(r, 2) + "R"}</div>
+                </div>
+                <button class="btn ${net >= 0 ? "" : "danger"}" type="button" data-edit="${trade.id}">${formatMoney(net)}</button>
+              </article>
+            `;
+          }).join("")
+        : '<div class="empty-state">No trades on this day.</div>';
+
+      els.selectedDayPanel.innerHTML = `
+        <div class="mini-stats">
+          <div class="mini-stat"><span>Net P/L</span><strong class="${resultClass(metrics.total)}">${formatMoney(metrics.total)}</strong></div>
+          <div class="mini-stat"><span>Win Rate</span><strong>${formatNumber(metrics.winRate, 1)}%</strong></div>
+          <div class="mini-stat"><span>Average R</span><strong>${metrics.avgR === null ? "-" : formatNumber(metrics.avgR, 2) + "R"}</strong></div>
+        </div>
+        <div class="trade-list">${tradeItems}</div>
+      `;
+
+      els.selectedDayPanel.querySelectorAll("[data-edit]").forEach((button) => {
+        button.addEventListener("click", () => openTradeDialog(button.dataset.edit));
+      });
+    }
+
+    function monthlyTotals() {
+      const totals = Array(12).fill(0);
+      tradesInYear().forEach((trade) => {
+        totals[parseIsoDate(trade.date).month] += netProfit(trade);
+      });
+      return totals;
+    }
+
+    function renderCharts() {
+      const totals = monthlyTotals();
+      const textColor = "#cbd5e1";
+      const gridColor = "rgba(148, 163, 184, .14)";
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => formatMoney(context.parsed.y ?? context.parsed)
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: textColor }, grid: { color: gridColor } },
+          y: { ticks: { color: textColor }, grid: { color: gridColor } }
+        }
+      };
+
+      if (monthlyChart) {
+        monthlyChart.destroy();
+      }
+      monthlyChart = new Chart(els.monthlyChart, {
+        type: "bar",
+        data: {
+          labels: MONTH_NAMES.map((name) => name.slice(0, 3)),
+          datasets: [{
+            data: totals,
+            backgroundColor: totals.map((value) => value >= 0 ? "rgba(34, 197, 94, .72)" : "rgba(244, 63, 94, .72)"),
+            borderColor: totals.map((value) => value >= 0 ? "#22c55e" : "#f43f5e"),
+            borderWidth: 1
+          }]
+        },
+        options: commonOptions
+      });
+
+      const sortedTrades = tradesInYear().slice().sort(sortTradesAsc);
+      let running = 0;
+      const labels = [];
+      const equity = sortedTrades.map((trade, index) => {
+        running += netProfit(trade);
+        labels.push((index + 1) + " " + (trade.symbol || "Trade"));
+        return running;
+      });
+
+      if (equityChart) {
+        equityChart.destroy();
+      }
+      equityChart = new Chart(els.equityChart, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            data: equity,
+            borderColor: running >= 0 ? "#22c55e" : "#f43f5e",
+            backgroundColor: "rgba(56, 189, 248, .12)",
+            fill: true,
+            tension: .25,
+            pointRadius: 3,
+            pointBackgroundColor: equity.map((value) => value >= 0 ? "#22c55e" : "#f43f5e")
+          }]
+        },
+        options: commonOptions
+      });
+    }
+
+    function renderTradeLog() {
+      const trades = filteredTrades();
+      els.logSubtitle.textContent = trades.length + " matching trades";
+      if (!trades.length) {
+        els.tradeLogBody.innerHTML = '<tr><td colspan="11"><div class="empty-state">No trades match the current view.</div></td></tr>';
+        return;
+      }
+
+      els.tradeLogBody.innerHTML = trades.map((trade) => {
+        const net = netProfit(trade);
+        const r = rMultiple(trade);
+        return `
+          <tr>
+            <td>${escapeHtml(formatDate(trade.date))}</td>
+            <td><strong>${escapeHtml(trade.symbol || "-")}</strong></td>
+            <td><span class="pill ${trade.side.toLowerCase()}">${escapeHtml(trade.side)}</span></td>
+            <td>${escapeHtml(trade.setup || "-")}</td>
+            <td>${escapeHtml(trade.entry || "-")}</td>
+            <td>${escapeHtml(trade.exit || "-")}</td>
+            <td>${trade.risk === "" ? "-" : formatMoney(trade.risk)}</td>
+            <td class="${resultClass(net)}"><strong>${formatMoney(net)}</strong></td>
+            <td>${r === null ? "-" : formatNumber(r, 2)}</td>
+            <td>${escapeHtml(trade.grade)}</td>
+            <td><button class="btn" type="button" data-edit="${trade.id}">Edit</button></td>
+          </tr>
+        `;
+      }).join("");
+
+      els.tradeLogBody.querySelectorAll("[data-edit]").forEach((button) => {
+        button.addEventListener("click", () => openTradeDialog(button.dataset.edit));
+      });
+    }
+
+    function openTradeDialog(id = null) {
+      editingId = id;
+      const trade = id ? state.trades.find((item) => item.id === id) : null;
+      const fallbackDate = selectedDate || isoDate(state.settings.year, activeMonth, 1);
+      els.tradeForm.reset();
+      els.dialogTitle.textContent = trade ? "Edit Trade" : "New Trade";
+      els.dialogSubtitle.textContent = trade ? formatDate(trade.date) : formatDate(fallbackDate);
+      els.deleteTradeBtn.classList.toggle("hidden", !trade);
+
+      const source = trade || {
+        date: fallbackDate,
+        symbol: "",
+        side: "Long",
+        session: "Intraday",
+        setup: "",
+        entry: "",
+        exit: "",
+        stop: "",
+        target: "",
+        quantity: "",
+        risk: "",
+        profit: "",
+        fees: "",
+        grade: "B",
+        mood: "Focused",
+        notes: ""
+      };
+
+      Object.keys(fields).forEach((key) => {
+        fields[key].value = source[key] ?? "";
+      });
+
+      els.tradeDialogLayer.classList.add("open");
+      fields.symbol.focus();
+    }
+
+    function closeTradeDialog() {
+      els.tradeDialogLayer.classList.remove("open");
+      editingId = null;
+    }
+
+    function saveTradeFromForm(event) {
+      event.preventDefault();
+      const trade = normalizeTrade({
+        id: editingId || newId(),
+        date: fields.date.value,
+        symbol: fields.symbol.value,
+        side: fields.side.value,
+        session: fields.session.value,
+        setup: fields.setup.value,
+        entry: fields.entry.value,
+        exit: fields.exit.value,
+        stop: fields.stop.value,
+        target: fields.target.value,
+        quantity: fields.quantity.value,
+        risk: fields.risk.value,
+        profit: fields.profit.value,
+        fees: fields.fees.value,
+        grade: fields.grade.value,
+        mood: fields.mood.value,
+        notes: fields.notes.value,
+        createdAt: editingId ? state.trades.find((item) => item.id === editingId)?.createdAt : new Date().toISOString()
+      });
+
+      if (!trade) {
+        return;
+      }
+
+      const existingIndex = state.trades.findIndex((item) => item.id === trade.id);
+      if (existingIndex >= 0) {
+        state.trades.splice(existingIndex, 1, trade);
+      } else {
+        state.trades.push(trade);
+      }
+
+      const parsed = parseIsoDate(trade.date);
+      state.settings.year = parsed.year;
+      activeMonth = parsed.month;
+      selectedDate = trade.date;
+      saveState();
+      closeTradeDialog();
+      render();
+    }
+
+    function deleteEditingTrade() {
+      if (!editingId) {
+        return;
+      }
+      const trade = state.trades.find((item) => item.id === editingId);
+      if (!trade || !confirm("Delete this trade?")) {
+        return;
+      }
+      state.trades = state.trades.filter((item) => item.id !== editingId);
+      selectedDate = trade.date;
+      saveState();
+      closeTradeDialog();
+      render();
+    }
+
+    function exportCsv() {
+      const headers = ["Date", "Symbol", "Side", "Session", "Setup", "Entry", "Exit", "Stop", "Target", "Quantity", "Risk", "Gross P/L", "Fees", "Net P/L", "R", "Grade", "Mood", "Notes"];
+      const rows = tradesInYear().slice().sort(sortTradesAsc).map((trade) => [
+        trade.date,
+        trade.symbol,
+        trade.side,
+        trade.session,
+        trade.setup,
+        trade.entry,
+        trade.exit,
+        trade.stop,
+        trade.target,
+        trade.quantity,
+        trade.risk,
+        trade.profit,
+        trade.fees,
+        netProfit(trade),
+        rMultiple(trade) === null ? "" : formatNumber(rMultiple(trade), 2),
+        trade.grade,
+        trade.mood,
+        trade.notes
+      ]);
+      downloadFile("trade-journal-" + state.settings.year + ".csv", "text/csv", [headers, ...rows].map(csvRow).join("\n"));
+    }
+
+    function csvRow(row) {
+      return row.map((value) => {
+        const text = String(value ?? "");
+        if (/[",\n]/.test(text)) {
+          return '"' + text.replaceAll('"', '""') + '"';
+        }
+        return text;
+      }).join(",");
+    }
+
+    function exportJson() {
+      downloadFile("trade-journal-backup.json", "application/json", JSON.stringify(state, null, 2));
+    }
+
+    function downloadFile(filename, type, content) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJsonFile(file) {
+      if (!file) {
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imported = safeParse(reader.result);
+        const nextState = Array.isArray(imported) ? { settings: state.settings, trades: imported } : imported;
+        if (!nextState || !Array.isArray(nextState.trades)) {
+          alert("That file does not look like a journal backup.");
+          return;
+        }
+        if (!confirm("Replace the current journal with this backup?")) {
+          return;
+        }
+        state = normalizeState(nextState);
+        activeMonth = 0;
+        selectedDate = isoDate(state.settings.year, 0, 1);
+        saveState();
+        render();
+      };
+      reader.readAsText(file);
+      els.jsonFileInput.value = "";
+    }
+
+    function clearData() {
+      if (!state.trades.length) {
+        return;
+      }
+      if (!confirm("Clear every saved trade from this journal?")) {
+        return;
+      }
+      state.trades = [];
+      saveState();
+      render();
+    }
+
+    function bindEvents() {
+      els.prevMonthBtn.addEventListener("click", () => {
+        activeMonth = activeMonth === 0 ? 11 : activeMonth - 1;
+        selectedDate = isoDate(state.settings.year, activeMonth, 1);
+        render();
+      });
+      els.nextMonthBtn.addEventListener("click", () => {
+        activeMonth = activeMonth === 11 ? 0 : activeMonth + 1;
+        selectedDate = isoDate(state.settings.year, activeMonth, 1);
+        render();
+      });
+      els.yearInput.addEventListener("change", () => {
+        state.settings.year = Number(els.yearInput.value) || DEFAULT_YEAR;
+        selectedDate = isoDate(state.settings.year, activeMonth, 1);
+        saveState();
+        render();
+      });
+      els.currencySelect.addEventListener("change", () => {
+        state.settings.currency = els.currencySelect.value;
+        saveState();
+        render();
+      });
+      els.addTradeBtn.addEventListener("click", () => openTradeDialog());
+      els.addDayTradeBtn.addEventListener("click", () => openTradeDialog());
+      els.exportCsvBtn.addEventListener("click", exportCsv);
+      els.exportJsonBtn.addEventListener("click", exportJson);
+      els.importJsonBtn.addEventListener("click", () => els.jsonFileInput.click());
+      els.jsonFileInput.addEventListener("change", () => importJsonFile(els.jsonFileInput.files[0]));
+      els.clearDataBtn.addEventListener("click", clearData);
+      els.searchInput.addEventListener("input", renderTradeLog);
+      els.sideFilter.addEventListener("change", renderTradeLog);
+      els.resultFilter.addEventListener("change", renderTradeLog);
+      els.tradeForm.addEventListener("submit", saveTradeFromForm);
+      els.closeDialogBtn.addEventListener("click", closeTradeDialog);
+      els.cancelTradeBtn.addEventListener("click", closeTradeDialog);
+      els.deleteTradeBtn.addEventListener("click", deleteEditingTrade);
+      els.tradeDialogLayer.addEventListener("click", (event) => {
+        if (event.target === els.tradeDialogLayer) {
+          closeTradeDialog();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && els.tradeDialogLayer.classList.contains("open")) {
+          closeTradeDialog();
+        }
+      });
+    }
+
+    bindEvents();
+    render();
+  </script>
+</body>
+</html>
