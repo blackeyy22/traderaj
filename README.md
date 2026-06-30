@@ -16,7 +16,7 @@ A polished single-page trading journal for logging trades, reviewing calendar pe
 - Net P/L, win rate, profit factor, average R, and streak metrics
 - Monthly P/L and equity curve charts
 - Trade log with filters
-- CSV export and JSON backup/import
+- CSV export/import and JSON backup/import
 - Automatic migration from the original `Jan1`, `Feb2`, etc. localStorage data format
 
 ## Run With Node
