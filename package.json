@@ -1,0 +1,17 @@
+{
+  "name": "trade-journal-pro",
+  "version": "1.0.0",
+  "description": "Static Trade Journal Pro app served with Node.js.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "trade",
+    "journal",
+    "node",
+    "static"
+  ],
+  "author": "blackeyy22",
+  "license": "MIT"
+}

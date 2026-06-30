@@ -6,6 +6,8 @@ A polished single-page trading journal for logging trades, reviewing calendar pe
 
 - `index.html` - main journal app
 - `jornal.html` - compatibility redirect for the original filename
+- `server.js` - small Node.js static server
+- `deploy-aws-ec2.md` - AWS EC2 deployment steps
 
 ## Features
 
@@ -16,3 +18,21 @@ A polished single-page trading journal for logging trades, reviewing calendar pe
 - Trade log with filters
 - CSV export and JSON backup/import
 - Automatic migration from the original `Jan1`, `Feb2`, etc. localStorage data format
+
+## Run With Node
+
+```bash
+npm start
+```
+
+The app runs on:
+
+```text
+http://localhost:3000
+```
+
+Set a different port with:
+
+```bash
+PORT=8080 npm start
+```
